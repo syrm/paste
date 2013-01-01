@@ -1,0 +1,6 @@
+@(id: String, content: String)
+
+@main(Seq("show")) {
+    <a class="raw" href="/@{id}.raw">raw</a>
+    @Html(content)
+}

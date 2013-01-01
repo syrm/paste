@@ -1,0 +1,48 @@
+textarea {
+    background-color: whiteSmoke;
+    width: 600px;
+    height: 400px;
+    float: left;
+}
+
+div.buttons {
+    float: left;
+}
+
+button[type="submit"], .btn-group {
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 97px;
+}
+
+#button-dd {
+    position: relative;
+}
+
+.caret {
+    position: absolute;
+    right: 7px;
+}
+
+.dropdown-menu {
+    min-width: 95px;
+}
+
+.dropdown-menu li {
+    display: block;
+    padding: 3px 15px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.dropdown-menu li:hover {
+    cursor: pointer;
+    color: white;
+    background-color: #08C;
+}
