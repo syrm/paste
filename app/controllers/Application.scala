@@ -5,8 +5,8 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Promise
+import play.api.libs.concurrent._
+import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
 
 import java.util.regex.Pattern
@@ -57,10 +57,10 @@ object Application extends Controller {
         Path.fromString(this.processed + id + ".html") match {
             case Exists(file) => Ok(views.html.show(id, file.lines().mkString("\r\n")))
             case _ =>
-                val promiseOfString: Promise[String] = Akka.future { processHighlight(id) }
+                val futurString = scala.concurrent.Future { processHighlight(id) }
 
                 Async {
-                    promiseOfString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
+                    futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
                         eitherStringOrTimeout.fold(
                             content => Ok(views.html.show(id, content)),
                             timeout => InternalServerError(timeout)
