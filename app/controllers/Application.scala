@@ -81,7 +81,7 @@ object Application extends Controller with Persistent {
     def raw(id: String) = TransAction { request =>
 
         Query(Pastes).filter(_.id is id).firstOption match {
-            case Some(paste: Paste) => Ok(views.html.show(paste.id, paste.content))
+            case Some(paste: Paste) => Ok(paste.content)
             case None => Ok(views.html.show("", "Paste not found"))
         }
 
