@@ -1,27 +1,19 @@
 package models
 
+import scala.slick.driver.ExtendedProfile
+import slick.session.{ Session => SlickSession }
+import controllers.Store
 
-object Lexer
-{
+import Store.driver.simple._
 
-    val lexers = Seq(
-                    "auto",
-                    "bash",
-                    "css",
-                    "dart",
-                    "erlang",
-                    "haml",
-                    "html",
-                    "java",
-                    "javascript",
-                    "json",
-                    "php",
-                    "ruby",
-                    "scala",
-                    "sql",
-                    "text")
+case class Lexer(
+    id: Option[Int],
+    name: String
+)
 
 
-    def all = lexers
-
+object Lexers extends Table[Lexer]("T_LEXER_LEX") {
+    def id = column[Int]("lex_id", O.PrimaryKey, O.AutoInc)
+    def name = column[String]("lex_name")
+    def * = id.? ~ name <> (Lexer, Lexer.unapply _)
 }

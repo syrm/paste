@@ -5,112 +5,106 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
+import play.api.libs.Files
+import play.api.libs.Files._
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.Play.current
-
-import java.util.regex.Pattern
-import scalax.file.Path
-import scalax.file.PathMatcher._
+import java.io._
 import sys.process._
+import Store.driver.simple._
+import models._
 
-import models.Lexer
 
+object Application extends Controller with Persistent {
 
-object Application extends Controller {
+    implicit val session = db.createSession
 
-    val source        = "data/raw/"
-    val processed     = "data/processed/"
     val pygmentOption = "linenos=inline,lineanchors=L,anchorlinenos=True,style=monokai"
 
     val pasteForm = Form(
         tuple(
-            "lexer"   -> text.verifying(pattern("""^[a-zA-Z-_]+$""".r)),
+            "lexer"   -> number,
             "content" -> text
         )
     )
 
 
-    def index = Action {
-        Ok(views.html.index(Lexer.all))
+    def index = TransAction { request =>
+        Ok(views.html.index(Query(Lexers).list))
     }
 
 
-    def paste = Action { implicit request =>
+    def paste = TransAction { implicit request =>
         pasteForm.bindFromRequest.fold(
             errors => Redirect(routes.Application.index),
             {
-                case(lexer, content) =>
-                    val id = java.util.UUID.randomUUID().toString().replaceAll("-", "")
-                    val name = id + "." + lexer + ".source"
-                    Path.fromString(this.source + name).write(content)
+                case(lexerId, content) =>
+                    try {
+                        val id = java.util.UUID.randomUUID().toString().replaceAll("-", "")
+                        Files.writeFile(TemporaryFile(new File("/tmp/paste-" + id + ".txt")).file, content)
+                        val futurString = scala.concurrent.Future { processHighlight(lexerId, "/tmp/paste-" + id + ".txt") }
 
-                    Redirect(routes.Application.show(id))
+                        Async {
+                            futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
+                                eitherStringOrTimeout.fold(
+                                    contentProcessed => {
+                                        Pastes.insert(Paste(id, lexerId, content, contentProcessed))
+                                        Redirect(routes.Application.show(id))
+                                    },
+                                    timeout => InternalServerError(timeout)
+                                )
+                            }
+                        }
+
+                    } catch {
+                        case e: Exception =>
+                        Logger.error(e.getMessage())
+                        Redirect(routes.Application.index())
+                    }
             }
         )
 
     }
 
 
-    def show(id: String) = Action {
+    def show(id: String) = TransAction { request =>
 
-        Path.fromString(this.processed + id + ".html") match {
-            case Exists(file) => Ok(views.html.show(id, file.lines().mkString("\r\n")))
-            case _ =>
-                val futurString = scala.concurrent.Future { processHighlight(id) }
-
-                Async {
-                    futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
-                        eitherStringOrTimeout.fold(
-                            content => Ok(views.html.show(id, content)),
-                            timeout => InternalServerError(timeout)
-                        )
-                    }
-                }
+        Query(Pastes).filter(_.id is id).firstOption match {
+            case Some(paste: Paste) => Ok(views.html.show(paste.id, paste.contentProcessed))
+            case None => Ok(views.html.show("", "Paste not found"))
         }
 
     }
 
 
-    def raw(id: String) = Action {
+    def raw(id: String) = TransAction { request =>
 
-        (Path.fromString(this.source) ** (id + ".*.source")).toList match {
-            case List(file) => Ok(file.lines().mkString("\r\n"))
-            case _ => Ok(views.html.show("", "Paste not found"))
+        Query(Pastes).filter(_.id is id).firstOption match {
+            case Some(paste: Paste) => Ok(views.html.show(paste.id, paste.content))
+            case None => Ok(views.html.show("", "Paste not found"))
         }
 
     }
 
 
-    def processHighlight(paste: String): String = {
-        (Path.fromString(this.source) ** (paste + ".*.source")).toList match {
-            case List(file) => {
-                val lexer = file.toString().split("\\.")(1)
-                val lexerOption = if (lexer == "auto") {
-                    "-g"
-                } else {
-                    "-l " + lexer
-                }
+    def processHighlight(lexerId: Int, file: String): String = {
 
-                ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html -o " + this.processed + paste + ".html " + file.path).!
-
-                val content = postProcess(Path.fromString(this.processed + paste + ".html").lines().mkString("\r\n"))
-                Path.fromString(this.processed + paste + ".html").write(content)
-                content
-
-            }
-            case _ => "Paste not found"
+        val lexerName = Query(Lexers).filter(_.id is lexerId).firstOption match {
+            case Some(lexer: Lexer) => lexer.name
+            case None => "auto"
         }
 
-    }
+        val lexerOption = if (lexerName == "auto") {
+            "-g"
+        } else {
+            "-l " + lexerName
+        }
 
-
-    def postProcess(content: String): String = {
-
+        val content = ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html " + file).!!
         content
-            .replaceAll(Pattern.quote("<title></title>\n"), "")
-            .replaceAll(Pattern.quote("<h2></h2>\n\n"), "")
 
     }
+
 
 }

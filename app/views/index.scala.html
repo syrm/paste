@@ -1,4 +1,4 @@
-@(lexers: Seq[String])
+@(lexers: List[Lexer])
 
 @main() {
 <form method="post" action="@routes.Application.paste">
@@ -13,11 +13,11 @@
                </button>
             <ul class="dropdown-menu">
             @lexers.map { lexer =>
-                <li>@lexer</li>
+                <li data-id="@lexer.id">@lexer.name</li>
             }
             </ul>
          </div>
-         <input id="lexer" type="hidden" name="lexer" value="auto" />
+         <input id="lexer" type="hidden" name="lexer" value="1" />
 
          <button type="submit" class="btn btn-primary" name="submit_code">paste</button>
       </div>
