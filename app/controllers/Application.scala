@@ -49,7 +49,7 @@ object Application extends Controller with Persistent {
                             futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
                                 eitherStringOrTimeout.fold(
                                     contentProcessed => {
-                                        Pastes.insert(Paste(id, lexerId, content, contentProcessed))
+                                        Pastes.insert(Paste(id, lexerId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
                                         Redirect(routes.Application.show(id))
                                     },
                                     timeout => InternalServerError(timeout)

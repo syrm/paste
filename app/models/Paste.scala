@@ -13,6 +13,7 @@ case class Paste(
     lexerId: Int,
     content: String,
     contentProcessed: String,
+    remoteIp: String,
     timestamp: Timestamp = new Timestamp(new Date().getTime())
 )
 
@@ -22,8 +23,9 @@ object Pastes extends Table[Paste]("T_PASTE_PAS") {
     def lexerId = column[Int]("lex_id")
     def content = column[String]("pas_content")
     def contentProcessed = column[String]("pas_content_processed")
+    def remoteIp = column[String]("pas_remote_ip")
     def timestamp = column[Timestamp]("pas_timestamp")
-    def * = id ~ lexerId ~ content ~ contentProcessed ~ timestamp <> (Paste, Paste.unapply _)
+    def * = id ~ lexerId ~ content ~ contentProcessed ~ remoteIp ~ timestamp <> (Paste, Paste.unapply _)
 
     def lexer = foreignKey("lexer_fk", lexerId, Lexers)(_.id)
 }
