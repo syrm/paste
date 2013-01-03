@@ -1,6 +1,7 @@
 package models
 
 import java.util.Date
+import java.sql.Timestamp
 import scala.slick.driver.ExtendedProfile
 import slick.session.{ Session => SlickSession }
 import controllers.Store
@@ -11,7 +12,8 @@ case class Paste(
     id: String,
     lexerId: Int,
     content: String,
-    var contentProcessed: String
+    contentProcessed: String,
+    timestamp: Timestamp = new Timestamp(new Date().getTime())
 )
 
 
@@ -20,7 +22,8 @@ object Pastes extends Table[Paste]("T_PASTE_PAS") {
     def lexerId = column[Int]("lex_id")
     def content = column[String]("pas_content")
     def contentProcessed = column[String]("pas_content_processed")
-    def * = id ~ lexerId ~ content ~ contentProcessed <> (Paste, Paste.unapply _)
+    def timestamp = column[Timestamp]("pas_timestamp")
+    def * = id ~ lexerId ~ content ~ contentProcessed ~ timestamp <> (Paste, Paste.unapply _)
 
     def lexer = foreignKey("lexer_fk", lexerId, Lexers)(_.id)
 }
