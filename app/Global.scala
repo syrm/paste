@@ -4,12 +4,11 @@ import play.api.mvc._
 import play.api.mvc.Results._
 import slick.driver.ExtendedProfile
 import controllers.Store
+import play.api.Play.current
+import Store.driver.simple._
 
 
 object Global extends GlobalSettings {
-
-    import Store.driver.simple._
-    import play.api.Play.current
 
     override def onStart(app: Application) {
         lazy val db = Database.forDataSource(DB.getDataSource())
