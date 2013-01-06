@@ -18,7 +18,7 @@ import models._
 
 object Application extends Controller with Secured {
 
-    val pygmentOption = "linenos=inline,lineanchors=L,anchorlinenos=True,style=monokai"
+    val pygmentOption = "encoding=utf-8,linenos=inline,lineanchors=L,anchorlinenos=True,style=monokai"
 
     val pasteForm = Form(
         tuple(
