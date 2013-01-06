@@ -5,7 +5,7 @@ $('input[type=file]').change(function() {
     $('#file').text(file)
 })
 
-$('li').click(function(elt) {
+$('ul.lexer li').click(function(elt) {
     $('#button-dd').html($(elt.target).text() + ' <span class="caret"></span>')
     $('#lexer').val($(elt.target).attr('data-id'))
 })
