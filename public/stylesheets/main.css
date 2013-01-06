@@ -102,3 +102,13 @@ input[type="text"], input[type="password"], textarea, button {
 .container.large {
     width: 80%
 }
+
+a.user {
+    padding-right: 0 !important;
+}
+
+a.logout {
+    padding-top: 11px !important;
+    padding-left: 10px !important;
+    padding-bottom: 0 !important;
+}

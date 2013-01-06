@@ -16,8 +16,8 @@
                 <ul class="nav pull-right">
                 @user match {
                     case Some(user: User) => {
-                        <li><a href="#"><strong>@user.name</strong></a></li>
-                        <li><a href="@routes.Auth.logout"><i class="icon-off"></i></a></li>
+                        <li><a class="user" href="#"><strong>@user.name</strong></a></li>
+                        <li><a class="logout" href="@routes.Auth.logout"><i class="icon-off"></i></a></li>
 
                     }
                     case None => {
