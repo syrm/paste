@@ -19,12 +19,4 @@ trait Persistent {
 
     lazy val db = Database.forDataSource(DB.getDataSource())
 
-    def TransAction(f: (Request[AnyContent]) => Result): Action[AnyContent] = {
-        Action { request =>
-            val session = db.createSession
-            session withTransaction {
-                f(request)
-            }
-        }
-    }
 }
