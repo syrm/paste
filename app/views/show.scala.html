@@ -1,6 +1,8 @@
-@(id: String, content: String)
+@(id: String, content: String)(implicit request: play.api.mvc.Request[Any], user: Option[User])
 
-@main(Seq("show")) {
+@main {
+<div class="container large">
     <a class="raw" href="/@{id}.raw">raw</a>
     @Html(content)
+</div>
 }

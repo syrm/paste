@@ -1,14 +1,33 @@
-@(stylesheets: Seq[String] = Seq("bootstrap", "main"))(content: Html)
+@(content: Html)(implicit request: play.api.mvc.Request[Any], user: Option[User])
 <!doctype html>
 <html>
     <head>
         <title>Paste me</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-        @stylesheets.map { stylesheet =>
-            <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/" + stylesheet + ".css")" rel="stylesheet">
-        }
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("res/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")" rel="stylesheet">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/show.css")" rel="stylesheet">
     </head>
     <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <a class="brand" href="@routes.Application.index">Paste</a>
+                <ul class="nav pull-right">
+                @user match {
+                    case Some(user: User) => {
+                        <li><a href="#"><strong>@user.name</strong></a></li>
+                        <li><a href="@routes.Auth.logout"><i class="icon-off"></i></a></li>
+
+                    }
+                    case None => {
+                        <li @if(request.uri == "/register") { class="active" }><a href="@routes.Auth.register"><strong>Register</strong></a></li>
+                        <li @if(request.uri == "/login") { class="active" }><a href="@routes.Auth.login">Login</a></li>
+                    }
+                }
+                </ul>
+            </div>
+        </div>
+
         @content
 
         <script type="text/javascript">

@@ -1,29 +1,31 @@
-@(lexers: List[Lexer])
+@(lexers: List[Lexer])(implicit request: play.api.mvc.Request[Any], user: Option[User])
 
-@main() {
-<form method="post" action="@routes.Application.paste">
-   <div class="span12">
-      <textarea name="content"></textarea>
+@main {
+<div class="container">
+    <form method="post" action="@routes.Application.paste">
+       <div class="span12">
+          <textarea name="content"></textarea>
 
-      <div class="buttons">
-         <div class="btn-group">
-               <button id="button-dd" class="btn dropdown-toggle" data-toggle="dropdown">
-                  auto
-                     <span class="caret"></span>
-               </button>
-            <ul class="dropdown-menu">
-            @lexers.map { lexer =>
-                <li data-id="@lexer.id">@lexer.name</li>
-            }
-            </ul>
-         </div>
-         <input id="lexer" type="hidden" name="lexer" value="1" />
+          <div class="buttons">
+             <div class="btn-group">
+                   <button id="button-dd" class="btn dropdown-toggle" data-toggle="dropdown">
+                      auto
+                         <span class="caret"></span>
+                   </button>
+                <ul class="dropdown-menu lexer">
+                @lexers.map { lexer =>
+                    <li data-id="@lexer.id">@lexer.name</li>
+                }
+                </ul>
+             </div>
+             <input id="lexer" type="hidden" name="lexer" value="1" />
 
-         <button type="submit" class="btn btn-primary" name="submit_code">paste</button>
-      </div>
-   </div>
-</form>
+             <button type="submit" class="btn btn-primary" name="submit_code">paste</button>
+          </div>
+       </div>
+    </form>
+</div>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/bootstrap.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("res/bootstrap/js/bootstrap.min.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>
 }

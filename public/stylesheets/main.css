@@ -1,3 +1,11 @@
+body {
+    padding-top: 65px;
+}
+
+.navbar-fixed-top .navbar-inner {
+    padding-left: 20px
+}
+
 textarea {
     background-color: whiteSmoke;
     width: 600px;
@@ -45,4 +53,52 @@ button {
     cursor: pointer;
     color: white;
     background-color: #08C;
+}
+
+.navbar .nav.pull-right {
+    margin-right: 20px;
+}
+
+pre {
+    border: 0;
+    background-color: transparent;
+}
+
+
+.raw {
+    font-size: 20px;
+    text-decoration: none;
+    color: #75715E;
+    position: fixed;
+    right: 32px;
+    top: 65px;
+}
+
+fieldset {
+    margin-top: 50px;
+}
+
+.control-group.submit {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.help-block.error {
+    color: #B94A48;
+}
+
+input[type="text"], input[type="password"] {
+    background-color: #EFEFEF !important;
+}
+
+input[type="text"], input[type="password"], textarea, button {
+    border-radius: 2px !important;
+}
+
+.register button[type="submit"] {
+    width: 200px;
+}
+
+.container.large {
+    width: 80%
 }

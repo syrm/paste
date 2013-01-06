@@ -16,9 +16,7 @@ import Store.driver.simple._
 import models._
 
 
-object Application extends Controller with Persistent {
-
-    implicit val session = db.createSession
+object Application extends Controller with Secured {
 
     val pygmentOption = "linenos=inline,lineanchors=L,anchorlinenos=True,style=monokai"
 
@@ -30,18 +28,23 @@ object Application extends Controller with Persistent {
     )
 
 
-    def index = TransAction { request =>
+    def index = withOptionalUser { implicit user => implicit request =>
         Ok(views.html.index(Query(Lexers).list))
     }
 
 
-    def paste = TransAction { implicit request =>
+    def paste = withOptionalUser { implicit user => implicit request =>
         pasteForm.bindFromRequest.fold(
             errors => Redirect(routes.Application.index),
             {
                 case(lexerId, content) =>
                     try {
                         val id = java.util.UUID.randomUUID().toString().replaceAll("-", "")
+                        val userId = user match {
+                            case Some(user) => user.id
+                            case None => None
+                        }
+
                         Files.writeFile(TemporaryFile(new File("/tmp/paste-" + id + ".txt")).file, content)
                         val futurString = scala.concurrent.Future { processHighlight(lexerId, "/tmp/paste-" + id + ".txt") }
 
@@ -49,7 +52,7 @@ object Application extends Controller with Persistent {
                             futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
                                 eitherStringOrTimeout.fold(
                                     contentProcessed => {
-                                        Pastes.insert(Paste(id, lexerId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
+                                        Pastes.insert(Paste(id, lexerId, userId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
                                         Redirect(routes.Application.show(id))
                                     },
                                     timeout => InternalServerError(timeout)
@@ -68,8 +71,7 @@ object Application extends Controller with Persistent {
     }
 
 
-    def show(id: String) = TransAction { request =>
-
+    def show(id: String) = withOptionalUser { implicit user => implicit request =>
         Query(Pastes).filter(_.id is id).firstOption match {
             case Some(paste: Paste) => Ok(views.html.show(paste.id, paste.contentProcessed))
             case None => Ok(views.html.show("", "Paste not found"))
@@ -78,8 +80,7 @@ object Application extends Controller with Persistent {
     }
 
 
-    def raw(id: String) = TransAction { request =>
-
+    def raw(id: String) = withOptionalUser { implicit user => implicit request =>
         Query(Pastes).filter(_.id is id).firstOption match {
             case Some(paste: Paste) => Ok(paste.content)
             case None => Ok(views.html.show("", "Paste not found"))
@@ -101,7 +102,11 @@ object Application extends Controller with Persistent {
             "-l " + lexerName
         }
 
-        val content = ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html " + file).!!
+        val content = try {
+            ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html " + file).!!
+        } catch {
+            case e: Exception => "Error : " + e
+        }
         content
 
     }

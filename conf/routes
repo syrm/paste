@@ -5,6 +5,11 @@
 GET     /$id<[0-9a-f]{32}>         controllers.Application.show(id: String)
 GET     /$id<[0-9a-f]{32}>.raw     controllers.Application.raw(id: String)
 POST    /paste                     controllers.Application.paste
+GET     /register                  controllers.Auth.register
+POST    /create                    controllers.Auth.create
+GET     /login                     controllers.Auth.login
+POST    /authenticate              controllers.Auth.authenticate
+GET     /logout                    controllers.Auth.logout
 GET     /                          controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path
