@@ -78,7 +78,7 @@ fieldset {
     margin-top: 50px;
 }
 
-.control-group.submit {
+.control-group.large {
     margin-top: 30px;
     text-align: center;
 }
@@ -108,7 +108,7 @@ a.user {
 }
 
 a.logout {
-    padding-top: 11px !important;
+    padding-top: 10px !important;
     padding-left: 10px !important;
     padding-bottom: 0 !important;
 }

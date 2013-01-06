@@ -20,13 +20,20 @@
                     <div class="control-group">
                         <label class="control-label" for="password">Password</label>
                         <div class="controls">
-                            <input type="password" id="password" name="password" value="@form("password").value" maxlength="32">
+                            <input type="password" id="password" name="password" @if(!form.hasErrors) { value="@form("password").value" } maxlength="32">
                             @for(error <- form.error("password")) {
                                 <span class="help-block error">@Messages(error.message, error.args: _ *)</span>
                             }
                         </div>
                     </div>
-                    <div class="control-group submit">
+
+                    @form.globalError.map { error =>
+                    <div class="control-group large">
+                        <span class="help-block error">@error.message</span>
+                    </div>
+                    }
+
+                    <div class="control-group large">
                         <button type="submit" class="btn btn-success">Sign In</button>
                     </div>
                 </fieldset>

@@ -16,7 +16,7 @@ object Auth extends Controller with Secured {
         tuple(
             "username" -> text.verifying(nonEmpty),
             "password" -> text.verifying(nonEmpty)
-        ) verifying ("Invalid email or password", result => result match {
+        ) verifying ("Invalid username or password", result => result match {
             case (username, password) => auth(username, password)
         })
     )
