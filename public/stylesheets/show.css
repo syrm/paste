@@ -1,8 +1,8 @@
 td.linenos { background-color: #f0f0f0; padding-right: 10px; }
 span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
-pre { line-height: 125%; }
+pre { line-height: 125%; color: #f8f8f2; }
 body .hll { background-color: #49483e }
-body  { background: #272822; color: #f8f8f2 }
+div.highlight { background: #272822; color: #f8f8f2; border-radius: 2px; }
 body .c { color: #75715e } /* Comment */
 body .err { color: #960050; background-color: #1e0010 } /* Error */
 body .k { color: #66d9ef } /* Keyword */
@@ -66,13 +66,4 @@ body .il { color: #ae81ff } /* Literal.Number.Integer.Long */
     background-color: transparent !important;
     color: #75715e !important;
     text-decoration: none !important;
-}
-
-.raw {
-    font-size: 20px;
-    text-decoration: none;
-    color: #75715E;
-    position: fixed;
-    right: 12px;
-    top: 5px;
 }
