@@ -1,19 +1,12 @@
 package models
 
-import scala.slick.driver.ExtendedProfile
-import slick.session.{ Session => SlickSession }
-import controllers.Store
+import org.squeryl.annotations.Column
+import org.squeryl.Schema
 
-import Store.driver.simple._
 
 case class Lexer(
-    id: Option[Int],
+    @Column("lex_id")
+    id: Int,
+    @Column("lex_name")
     name: String
 )
-
-
-object Lexers extends Table[Lexer]("T_LEXER_LEX") {
-    def id = column[Int]("lex_id", O.PrimaryKey, O.AutoInc)
-    def name = column[String]("lex_name")
-    def * = id.? ~ name <> (Lexer, Lexer.unapply _)
-}

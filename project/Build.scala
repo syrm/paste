@@ -5,10 +5,10 @@ import play.Project._
 object ApplicationBuild extends Build {
 
     val appName         = "Paste"
-    val appVersion      = "1.1"
+    val appVersion      = "1.2"
 
     val appDependencies = Seq(
-        "com.typesafe" % "slick_2.10.0-RC1" % "0.11.2",
+        "org.squeryl" %% "squeryl" % "0.9.5-6",
         "mysql" % "mysql-connector-java" % "5.1.20",
         jdbc
     )

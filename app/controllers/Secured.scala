@@ -1,23 +1,31 @@
 package controllers
 
-import play.api._
-import play.api.db.DB
-import play.api.Play.current
-import play.api.mvc._
-import Store.driver.simple._
 import com.github.nremond.PBKDF2
 import models._
+import models.Database._
+import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Session
+import play.api._
+import play.api.db.DB
+import play.api.mvc._
+import play.api.Play.current
 
 
-trait Secured extends Persistent {
-    implicit val session = db.createSession
+trait Secured {
 
     val pbkdf2_iterations = 10000
     val pbkdf2_size =  16
 
     def username(request: RequestHeader): Option[String] = request.session.get(Security.username)
 
-    def user(username: Option[String]): Option[User] = Query(Users).filter(_.name is username).firstOption
+    def user(username: Option[String]): Option[User] = {
+        inTransaction {
+            username match {
+                case Some(username) => Users.where(user => user.name === username).headOption
+                case None => None
+            }
+        }
+    }
 
     def auth(username: String, password: String): Boolean = {
         user(Some(username)) match {
@@ -30,7 +38,7 @@ trait Secured extends Persistent {
     }
 
 
-    def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.register)
+    def onUnauthorized(request: RequestHeader) = Results.Redirect("routes.Auth.register")
 
     def withUser(f: => String => Request[AnyContent] => Result) = {
         Security.Authenticated(username, onUnauthorized) { user =>
@@ -43,30 +51,3 @@ trait Secured extends Persistent {
     }
 
 }
-
-
-/*
-
-trait Secured2 {
-
-  def username(request: RequestHeader) = request.session.get(Security.username)
-
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.User.signin)
-
-  def withAuth(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(username, onUnauthorized) { user =>
-      Action(request => f(user)(request))
-    }
-  }
-
-  /**
-   * This method shows how you could wrap the withAuth method to also fetch your user
-   * You will need to implement UserDAO.findOneByUsername
-   */
-  def withUser(f: User => Request[AnyContent] => Result) = withAuth { username => implicit request =>
-    UserDAO.findOneByUsername(username).map { user =>
-      f(user)(request)
-    }.getOrElse(onUnauthorized(request))
-  }
-}
-*/

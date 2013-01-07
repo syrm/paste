@@ -1,19 +1,21 @@
 package controllers
 
+import java.io._
+import models._
+import models.Database._
+import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Session
 import play.api._
-import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.libs.Files
-import play.api.libs.Files._
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
+import play.api.libs.Files
+import play.api.libs.Files._
+import play.api.mvc._
 import play.api.Play.current
-import java.io._
 import sys.process._
-import Store.driver.simple._
-import models._
 
 
 object Application extends Controller with Secured {
@@ -29,7 +31,13 @@ object Application extends Controller with Secured {
 
 
     def index = withOptionalUser { implicit user => implicit request =>
-        Ok(views.html.index(Query(Lexers).list))
+        inTransaction {
+            val lexers = from(Lexers)(lexer =>
+                select(lexer)
+                orderBy(lexer.name)
+            ).toSeq
+            Ok(views.html.index(lexers))
+        }
     }
 
 
@@ -52,7 +60,9 @@ object Application extends Controller with Secured {
                             futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
                                 eitherStringOrTimeout.fold(
                                     contentProcessed => {
-                                        Pastes.insert(Paste(id, lexerId, userId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
+                                        inTransaction {
+                                            Pastes.insert(new Paste(id, lexerId, userId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
+                                        }
                                         Redirect(routes.Application.show(id))
                                     },
                                     timeout => InternalServerError(timeout)
@@ -72,28 +82,37 @@ object Application extends Controller with Secured {
 
 
     def show(id: String) = withOptionalUser { implicit user => implicit request =>
-        Query(Pastes).filter(_.id is id).firstOption match {
-            case Some(paste: Paste) => Ok(views.html.show(paste.id, paste.contentProcessed))
-            case None => Ok(views.html.show("", "Paste not found"))
+        inTransaction {
+           join(Pastes, Users.leftOuter)((paste, user) =>
+                where(paste.id === id)
+                select(paste, user)
+                on(paste.userId === user.get.id)
+            ).headOption match {
+                case Some((paste, pasteUser)) => {
+                    Ok(views.html.show(paste, pasteUser))
+                }
+                case None => Ok(views.html.pasteNotFound())
+            }
         }
-
     }
 
 
     def raw(id: String) = withOptionalUser { implicit user => implicit request =>
-        Query(Pastes).filter(_.id is id).firstOption match {
-            case Some(paste: Paste) => Ok(paste.content)
-            case None => Ok(views.html.show("", "Paste not found"))
+        inTransaction {
+            Pastes.where(_.id === id).headOption match {
+                case Some(paste: Paste) => Ok(paste.content)
+                case None => Ok(views.html.pasteNotFound())
+            }
         }
-
     }
 
 
     def processHighlight(lexerId: Int, file: String): String = {
-
-        val lexerName = Query(Lexers).filter(_.id is lexerId).firstOption match {
-            case Some(lexer: Lexer) => lexer.name
-            case None => "auto"
+        val lexerName = inTransaction {
+            Lexers.where(_.id === lexerId).headOption match {
+                case Some(lexer: Lexer) => lexer.name
+                case None => "auto"
+           }
         }
 
         val lexerOption = if (lexerName == "auto") {
