@@ -1,31 +1,24 @@
 package models
 
-import java.util.Date
 import java.sql.Timestamp
-import scala.slick.driver.ExtendedProfile
-import slick.session.{ Session => SlickSession }
-import controllers.Store
+import java.util.Date
+import org.squeryl.annotations.Column
+import org.squeryl.Schema
 
-import Store.driver.simple._
 
 case class Paste(
+    @Column("pas_id")
     id: String,
+    @Column("lex_id")
     lexerId: Int,
+    @Column("usr_id")
     userId: Option[Int],
+    @Column("pas_content")
     content: String,
+    @Column("pas_content_processed")
     contentProcessed: String,
+    @Column("pas_remote_ip")
     remoteIp: String,
+    @Column("pas_timestamp")
     timestamp: Timestamp = new Timestamp(new Date().getTime())
 )
-
-
-object Pastes extends Table[Paste]("T_PASTE_PAS") {
-    def id = column[String]("pas_id", O.PrimaryKey)
-    def lexerId = column[Int]("lex_id")
-    def userId = column[Int]("usr_id")
-    def content = column[String]("pas_content")
-    def contentProcessed = column[String]("pas_content_processed")
-    def remoteIp = column[String]("pas_remote_ip")
-    def timestamp = column[Timestamp]("pas_timestamp")
-    def * = id ~ lexerId ~ userId.? ~ content ~ contentProcessed ~ remoteIp ~ timestamp <> (Paste, Paste.unapply _)
-}

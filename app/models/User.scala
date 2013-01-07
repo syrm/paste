@@ -1,27 +1,20 @@
 package models
 
-import java.util.Date
 import java.sql.Timestamp
-import scala.slick.driver.ExtendedProfile
-import slick.session.{ Session => SlickSession }
-import controllers.Store
+import java.util.Date
+import org.squeryl.annotations.Column
+import org.squeryl.Schema
 
-import Store.driver.simple._
 
 case class User(
+    @Column("usr_id")
     id: Option[Int],
+    @Column("usr_name")
     name: String,
+    @Column("usr_password")
     password: String,
+    @Column("usr_salt")
     salt: String,
+    @Column("usr_timestamp")
     timestamp: Timestamp = new Timestamp(new Date().getTime())
 )
-
-
-object Users extends Table[User]("T_USER_USR") {
-    def id = column[Int]("usr_id", O.PrimaryKey, O.AutoInc)
-    def name = column[String]("usr_name")
-    def password = column[String]("usr_password")
-    def salt = column[String]("usr_salt")
-    def timestamp = column[Timestamp]("usr_timestamp")
-    def * = id.? ~ name ~ password ~ salt ~ timestamp <> (User, User.unapply _)
-}
