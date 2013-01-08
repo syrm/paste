@@ -24,8 +24,9 @@ object Application extends Controller with Secured {
 
     val pasteForm = Form(
         tuple(
+            "name"    -> optional(text.verifying("Maximum length of name is 60", _.length < 61)),
             "lexer"   -> number,
-            "content" -> text
+            "content" -> text.verifying("Paste cannot be empty", _.nonEmpty)
         )
     )
 
@@ -36,16 +37,16 @@ object Application extends Controller with Secured {
                 select(lexer)
                 orderBy(lexer.name)
             ).toSeq
-            Ok(views.html.index(lexers))
+            Ok(views.html.index(flash, lexers))
         }
     }
 
 
     def paste = withOptionalUser { implicit user => implicit request =>
         pasteForm.bindFromRequest.fold(
-            errors => Redirect(routes.Application.index),
+            formWithErrors => Redirect(routes.Application.index()).flashing("error" -> formWithErrors.errors(0).message),
             {
-                case(lexerId, content) =>
+                case(name, lexerId, content) =>
                     try {
                         val id = java.util.UUID.randomUUID().toString().replaceAll("-", "")
                         val userId = user match {
@@ -61,7 +62,7 @@ object Application extends Controller with Secured {
                                 eitherStringOrTimeout.fold(
                                     contentProcessed => {
                                         inTransaction {
-                                            Pastes.insert(new Paste(id, lexerId, userId, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
+                                            Pastes.insert(new Paste(id, lexerId, userId, name, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
                                         }
                                         Redirect(routes.Application.show(id))
                                     },

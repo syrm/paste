@@ -13,6 +13,8 @@ case class Paste(
     lexerId: Int,
     @Column("usr_id")
     userId: Option[Int],
+    @Column("pas_name")
+    name: Option[String],
     @Column("pas_content")
     content: String,
     @Column("pas_content_processed")

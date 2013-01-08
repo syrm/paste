@@ -3,7 +3,7 @@
 @main {
 <div class="container large">
     <a class="raw" href="/@{paste.id}.raw">raw</a>
-    <div>by <strong>@pasteUser match {
+    <div>@paste.name by <strong>@pasteUser match {
         case None => { anonymous }
         case Some(pasteUser) => { @pasteUser.name }
     }</strong></div>
