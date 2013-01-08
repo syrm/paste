@@ -5,7 +5,7 @@ import play.Project._
 object ApplicationBuild extends Build {
 
     val appName         = "Paste"
-    val appVersion      = "1.2.1"
+    val appVersion      = "1.2.2"
 
     val appDependencies = Seq(
         "org.squeryl" %% "squeryl" % "0.9.5-6",

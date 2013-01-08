@@ -50,6 +50,14 @@ button.lexer {
     margin-right: 10px;
 }
 
+ul.lexer {
+    left: auto;
+    right: 0;
+    top: 39px;
+    margin-right: 10px;
+    border-radius: 2px;
+}
+
 textarea {
     background-color: whiteSmoke;
     max-width: 100%;
