@@ -1,6 +1,6 @@
 @(paste: Paste, pasteUser: Option[User])(implicit request: play.api.mvc.Request[Any], user: Option[User])
 
-@main {
+@layout.main {
 <div class="container large">
     <a class="raw" href="/@{paste.id}.raw">raw</a>
     <div>@paste.name by <strong>@pasteUser match {

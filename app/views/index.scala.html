@@ -1,6 +1,6 @@
 @(flash: Flash, lexers: Seq[Lexer])(implicit request: play.api.mvc.Request[Any], user: Option[User])
 
-@main {
+@layout.main {
 <div class="container">
     <form method="post" action="@routes.Application.paste">
         <div class="row">
