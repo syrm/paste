@@ -37,7 +37,7 @@ object Application extends Controller with Secured {
                 select(lexer)
                 orderBy(lexer.name)
             ).toSeq
-            Ok(views.html.index(flash, lexers))
+            Ok(views.html.application.index(flash, lexers))
         }
     }
 
@@ -90,9 +90,9 @@ object Application extends Controller with Secured {
                 on(paste.userId === user.get.id)
             ).headOption match {
                 case Some((paste, pasteUser)) => {
-                    Ok(views.html.show(paste, pasteUser))
+                    Ok(views.html.application.show(paste, pasteUser))
                 }
-                case None => Ok(views.html.pasteNotFound())
+                case None => Ok(views.html.application.pasteNotFound())
             }
         }
     }
@@ -102,7 +102,7 @@ object Application extends Controller with Secured {
         inTransaction {
             Pastes.where(_.id === id).headOption match {
                 case Some(paste: Paste) => Ok(paste.content)
-                case None => Ok(views.html.pasteNotFound())
+                case None => Ok(views.html.application.pasteNotFound())
             }
         }
     }
