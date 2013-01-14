@@ -11,8 +11,6 @@ import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.libs.Files
-import play.api.libs.Files._
 import play.api.mvc._
 import play.api.Play.current
 import sys.process._
@@ -54,8 +52,7 @@ object Application extends Controller with Secured {
                             case None => None
                         }
 
-                        Files.writeFile(TemporaryFile(new File("/tmp/paste-" + id + ".txt")).file, content)
-                        val futurString = scala.concurrent.Future { processHighlight(lexerId, "/tmp/paste-" + id + ".txt") }
+                        val futurString = scala.concurrent.Future { processHighlight(lexerId, content) }
 
                         Async {
                             futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
@@ -108,7 +105,7 @@ object Application extends Controller with Secured {
     }
 
 
-    def processHighlight(lexerId: Int, file: String): String = {
+    def processHighlight(lexerId: Int, paste: String): String = {
         val lexerName = inTransaction {
             Lexers.where(_.id === lexerId).headOption match {
                 case Some(lexer: Lexer) => lexer.name
@@ -123,8 +120,9 @@ object Application extends Controller with Secured {
         }
 
         val content = try {
-            ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html " + file).!!
-        } catch {
+            val pasteStream: InputStream =  new ByteArrayInputStream(paste getBytes "UTF-8")
+            ("pygmentize " + lexerOption + " -O " + this.pygmentOption + " -f html") #< pasteStream !!
+       } catch {
             case e: Exception => "Error : " + e
         }
         content
