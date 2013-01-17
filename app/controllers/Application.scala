@@ -13,6 +13,7 @@ import play.api.libs.concurrent._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc._
 import play.api.Play.current
+import scala.language.postfixOps
 import sys.process._
 
 object Application extends Controller with Secured {
