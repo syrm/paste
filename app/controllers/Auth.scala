@@ -1,10 +1,8 @@
 package controllers
 
+import anorm._
 import com.github.nremond.PBKDF2
 import models._
-import models.Database._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Session
 import play.api._
 import play.api.data._
 import play.api.data.Forms._
@@ -57,9 +55,7 @@ object Auth extends Controller with Secured {
         case (username, password) => {
           val salt = java.util.UUID.randomUUID().toString().replaceAll("-", "")
           val passwordCrypted = PBKDF2(password, salt, pbkdf2_iterations, pbkdf2_size)
-          inTransaction {
-            Users.insert(new User(None, username, passwordCrypted, salt))
-          }
+          User.create(new User(NotAssigned, username, passwordCrypted, salt))
           Redirect(routes.Application.index).withSession(Security.username -> username)
         }
       })

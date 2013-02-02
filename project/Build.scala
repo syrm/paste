@@ -1,5 +1,5 @@
 import sbt._
-import Keys._
+import sbt.Keys._
 import play.Project._
 
 object ApplicationBuild extends Build {
@@ -8,9 +8,9 @@ object ApplicationBuild extends Build {
   val appVersion = "1.2.2"
 
   val appDependencies = Seq(
-    "org.squeryl" %% "squeryl" % "0.9.5-6",
     "mysql" % "mysql-connector-java" % "5.1.20",
-    jdbc)
+    jdbc,
+    anorm)
 
   val pbkdf2Project = RootProject(uri("git://github.com/oxman/pbkdf2-scala.git"))
 

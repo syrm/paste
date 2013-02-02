@@ -1,11 +1,11 @@
-@(paste: Paste, pasteUser: Option[User])(implicit request: play.api.mvc.Request[Any], user: Option[User])
+@(paste: Paste, owner: Option[User])(implicit request: play.api.mvc.Request[Any], user: Option[User])
 
 @layout.main {
 <div class="container large">
     <a class="raw" href="/@{paste.id}.raw">raw</a>
-    <div>@paste.name by <strong>@pasteUser match {
+    <div>@paste.name by <strong>@owner match {
+        case Some(owner) => { @owner.name }
         case None => { anonymous }
-        case Some(pasteUser) => { @pasteUser.name }
     }</strong></div>
     @Html(paste.contentProcessed)
 </div>

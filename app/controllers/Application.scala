@@ -1,10 +1,9 @@
 package controllers
 
+import anorm._
 import java.io._
+import java.util.Date
 import models._
-import models.Database._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Session
 import play.api._
 import play.api.data._
 import play.api.data.Forms._
@@ -28,12 +27,7 @@ object Application extends Controller with Secured {
 
   def index = withOptionalUser { implicit user =>
     implicit request =>
-      inTransaction {
-        val lexers = from(Lexers)(lexer =>
-          select(lexer)
-            orderBy (lexer.name)).toSeq
-        Ok(views.html.application.index(flash, lexers))
-      }
+      Ok(views.html.application.index(flash, Lexer.getAll))
   }
 
   def paste = withOptionalUser { implicit user =>
@@ -43,10 +37,10 @@ object Application extends Controller with Secured {
         {
           case (name, lexerId, content) =>
             try {
-              val id = java.util.UUID.randomUUID().toString().replaceAll("-", "")
+              val hash = java.util.UUID.randomUUID().toString().replaceAll("-", "")
               val userId = user match {
-                case Some(user) => user.id
-                case None => None
+                case Some(user) => Some(user.id.get)
+                case None       => None
               }
 
               val futurString = scala.concurrent.Future { processHighlight(lexerId, content) }
@@ -55,10 +49,19 @@ object Application extends Controller with Secured {
                 futurString.orTimeout("Oops", 1000).map { eitherStringOrTimeout =>
                   eitherStringOrTimeout.fold(
                     contentProcessed => {
-                      inTransaction {
-                        Pastes.insert(new Paste(id, lexerId, userId, name, content, contentProcessed, request.remoteAddress.substring(0, request.remoteAddress.length.min(39))))
-                      }
-                      Redirect(routes.Application.show(id))
+                      Paste.create(
+                        new Paste(
+                          NotAssigned,
+                          hash,
+                          None,
+                          lexerId,
+                          userId,
+                          name,
+                          content,
+                          contentProcessed,
+                          request.remoteAddress.substring(0, request.remoteAddress.length.min(39)),
+                          new Date))
+                      Redirect(routes.Application.show(hash))
                     },
                     timeout => InternalServerError(timeout))
                 }
@@ -73,38 +76,28 @@ object Application extends Controller with Secured {
 
   }
 
-  def show(id: String) = withOptionalUser { implicit user =>
+  def show(hash: String) = withOptionalUser { implicit user =>
     implicit request =>
-      inTransaction {
-        join(Pastes, Users.leftOuter)((paste, user) =>
-          where(paste.id === id)
-            select (paste, user)
-            on (paste.userId === user.get.id)).headOption match {
-          case Some((paste, pasteUser)) => {
-            Ok(views.html.application.show(paste, pasteUser))
-          }
-          case None => Ok(views.html.application.pasteNotFound())
-        }
+
+      Paste.getByHash(hash) match {
+        case Some((paste, owner)) => Ok(views.html.application.show(paste, owner))
+        case None                 => Ok(views.html.application.pasteNotFound())
       }
   }
 
-  def raw(id: String) = withOptionalUser { implicit user =>
+  def raw(hash: String) = withOptionalUser { implicit user =>
     implicit request =>
-      inTransaction {
-        Pastes.where(_.id === id).headOption match {
-          case Some(paste: Paste) => Ok(paste.content)
-          case None => Ok(views.html.application.pasteNotFound())
-        }
+      Paste.getByHash(hash) match {
+        case Some((paste, owner)) => Ok(paste.content)
+        case None                 => Ok(views.html.application.pasteNotFound())
       }
   }
 
   def processHighlight(lexerId: Int, paste: String): String = {
-    val lexerName = inTransaction {
-      Lexers.where(_.id === lexerId).headOption match {
+    val lexerName = Lexer.getById(lexerId) match {
         case Some(lexer: Lexer) => lexer.name
-        case None => "auto"
+        case None               => "auto"
       }
-    }
 
     val lexerOption = if (lexerName == "auto") {
       "-g"

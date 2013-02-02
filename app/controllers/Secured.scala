@@ -2,9 +2,6 @@ package controllers
 
 import com.github.nremond.PBKDF2
 import models._
-import models.Database._
-import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.Session
 import play.api._
 import play.api.db.DB
 import play.api.mvc._
@@ -18,11 +15,9 @@ trait Secured {
   def username(request: RequestHeader): Option[String] = request.session.get(Security.username)
 
   def user(username: Option[String]): Option[User] = {
-    inTransaction {
-      username match {
-        case Some(username) => Users.where(user => user.name === username).headOption
-        case None => None
-      }
+    username match {
+      case Some(username) => User.getByName(username)
+      case None => None
     }
   }
 
