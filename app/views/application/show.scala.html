@@ -2,7 +2,7 @@
 
 @layout.main {
 <div class="container large">
-    <a class="raw" href="/@{paste.id}.raw">raw</a>
+    <a class="raw" href="/@{paste.hash}.raw">raw</a>
     <div>@paste.name by <strong>@owner match {
         case Some(owner) => { @owner.name }
         case None => { anonymous }
