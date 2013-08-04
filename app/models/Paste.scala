@@ -23,7 +23,7 @@ case class Paste(
 
   def summary = {
     val contentSplitted = contentProcessed.split("\n")
-    val header = if (contentSplitted.length >= 9) {
+    val header = if (contentSplitted.length > 9) {
       contentSplitted.take(9) :+ """<a name="L-10"></a><span class="lineno"> 10</span> <span class="n">...</span></pre></div>"""
     } else {
       contentSplitted
