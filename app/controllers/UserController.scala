@@ -17,7 +17,7 @@ import sys.process._
 
 object UserController extends Controller with Secured {
 
-  def me = withOptionalUser { implicit user =>
+  def me = withUser { implicit user =>
     implicit request =>
     Ok(views.html.user.pastes(Paste.getByUser(user.get)))
   }

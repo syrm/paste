@@ -31,7 +31,7 @@ trait Secured {
     }
   }
 
-  def onUnauthorized(request: RequestHeader) = Results.Redirect("routes.Auth.register")
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.register)
 
   def withUser(f: => Option[User] => Request[AnyContent] => Result) = {
     Security.Authenticated(username, onUnauthorized) { username =>
