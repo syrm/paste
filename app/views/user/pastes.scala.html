@@ -8,7 +8,12 @@
             <div class="paste">
                 <a href="@routes.Application.show(paste.hash)">@paste.name match {
                     case None => { Unnamed }
-                    case Some(name) => { @name }
+                    case Some(name) => { @if(name != "") {
+                        @name
+                      } else {
+                        Unnamed
+                      }
+                    }
                 }</a>
                 @Html(paste.summary)
             </div>
