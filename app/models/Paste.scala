@@ -19,7 +19,19 @@ case class Paste(
   contentProcessed: String,
   remoteIp: String,
   timestamp: Date
-)
+) {
+
+  def summary = {
+    val contentSplitted = contentProcessed.split("\n")
+    val header = if (contentSplitted.length >= 9) {
+      contentSplitted.take(9) :+ """<a name="L-10"></a><span class="lineno"> 10</span> <span class="n">...</span></pre></div>"""
+    } else {
+      contentSplitted
+    }
+
+    header mkString("\n")
+  }
+}
 
 object Paste {
 
@@ -61,6 +73,20 @@ object Paste {
           where pas_hash = {hash}
         """).on(
         'hash -> hash).as(Paste.withUser.singleOpt)
+    }
+  }
+
+  /**
+   * Retrieve all Pastes from User.
+   */
+  def getByUser(user: User): Seq[(Paste, Option[User])] = {
+    DB.withConnection { implicit connection =>
+      SQL("""
+          select * from T_PASTE_PAS pas
+          inner join T_USER_USR usr ON (usr.usr_id = pas.usr_id)
+          where usr.usr_id = {userId}
+        """).on(
+        'userId -> user.id).as(Paste.withUser *)
     }
   }
 

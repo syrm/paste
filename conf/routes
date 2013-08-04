@@ -10,6 +10,7 @@ POST    /create                    controllers.Auth.create
 GET     /login                     controllers.Auth.login
 POST    /authenticate              controllers.Auth.authenticate
 GET     /logout                    controllers.Auth.logout
+GET     /me                        controllers.UserController.me
 GET     /                          controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path
